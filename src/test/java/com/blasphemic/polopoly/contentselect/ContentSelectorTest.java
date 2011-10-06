@@ -56,7 +56,7 @@ public class ContentSelectorTest
 
         content1.setContentReference("group", "name", content2.getContentId());
 
-        cmServer.addContents(content1, content2);
+        cmServer.addContent(content1, content2);
 
         List<ContentId> result = selector.select(content1.getContentId());
 
@@ -76,7 +76,7 @@ public class ContentSelectorTest
         content1.setContentReference("group1", "name1", content2.getContentId());
         content1.setContentReference("group2", "name2", content3.getContentId());
 
-        cmServer.addContents(content1, content2, content3);
+        cmServer.addContent(content1, content2, content3);
 
         List<ContentId> result = selector.select(content1.getContentId());
 
@@ -97,14 +97,32 @@ public class ContentSelectorTest
         content1.setContentReference("group2", "name2", content3.getContentId());
         content2.setContentReference("group1", "name1", content3.getContentId());
 
-        cmServer.addContents(content1, content2, content3);
+        cmServer.addContent(content1, content2, content3);
 
         List<ContentId> result = selector.select(content1.getContentId());
 
         Assert.assertNotNull(result);
 
         assertListContains(result, content1.getContentId(), content2.getContentId(), content3.getContentId());
-        assertListContainsOnlyOnce(result, content3.getContentId());
+    }
+
+    @Test
+    public void testSelectContentWithCircularLinks()
+        throws Exception
+    {
+        Content content1 = new TestContent(new ContentId(1, 100));
+        Content content2 = new TestContent(new ContentId(2, 100));
+
+        content1.setContentReference("group1", "name1", content2.getContentId());
+        content2.setContentReference("group1", "name1", content1.getContentId());
+
+        cmServer.addContent(content1, content2);
+
+        List<ContentId> result = selector.select(content1.getContentId());
+
+        Assert.assertNotNull(result);
+
+        assertListContains(result, content1.getContentId(), content2.getContentId());
     }
 
     private void assertListContains(final List<ContentId> result,
@@ -119,18 +137,6 @@ public class ContentSelectorTest
         } catch (AssertionError ae) {
             LOG.log(Level.WARNING, "List was: " + result);
             throw ae;
-        }
-    }
-
-    private void assertListContainsOnlyOnce(final List<ContentId> result,
-                                            final ContentId contentId)
-    {
-        boolean occured = false;
-        for (ContentId resultId : result) {
-            if (resultId.equals(contentId)) {
-                Assert.assertEquals(occured, false);
-                occured = true;
-            }
         }
     }
 }

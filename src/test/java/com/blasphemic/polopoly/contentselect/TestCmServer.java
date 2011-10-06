@@ -39,7 +39,7 @@ public class TestCmServer
         contents.add(content);
     }
     
-    public void addContents(final Content... contents)
+    public void addContent(final Content... contents)
     {
         this.contents.addAll(Arrays.asList(contents));
     }

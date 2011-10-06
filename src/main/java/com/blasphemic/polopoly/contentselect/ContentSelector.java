@@ -7,15 +7,16 @@ import java.util.logging.Logger;
 
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.client.CMException;
+import com.polopoly.cm.client.CMServer;
 import com.polopoly.cm.client.Content;
 
 public class ContentSelector
 {
     private static final Logger LOG = Logger.getLogger(ContentSelector.class.getName());
 
-    private final TestCmServer cmServer;
+    private final CMServer cmServer;
 
-    public ContentSelector(final TestCmServer cmServer)
+    public ContentSelector(final CMServer cmServer)
     {
         this.cmServer = cmServer;
     }

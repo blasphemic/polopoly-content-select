@@ -2,23 +2,18 @@ package com.blasphemic.polopoly.contentselect;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import com.blasphemic.polopoly.contentselect.list.ContentSelectorTraverserList;
 import com.polopoly.cm.ContentId;
-import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.CMServer;
-import com.polopoly.cm.client.Content;
 
 public class ContentSelector
 {
-    private static final Logger LOG = Logger.getLogger(ContentSelector.class.getName());
-
-    private final CMServer cmServer;
+    private ContentSelectorTraverser listTraverser = null;
 
     public ContentSelector(final CMServer cmServer)
     {
-        this.cmServer = cmServer;
+        listTraverser = new ContentSelectorTraverserList(cmServer);
     }
 
     public List<ContentId> select(final ContentId rootContentId)
@@ -28,32 +23,15 @@ public class ContentSelector
         }
 
         List<ContentId> result = new ArrayList<ContentId>();
-
-        try {
-            selectFrom(rootContentId, result);
-        } catch (CMException e) {
-            LOG.log(Level.WARNING, "Error while selecting content.", e);
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        listTraverser.traverse(rootContentId, result);
 
         return result;
     }
 
-    private void selectFrom(final ContentId contentId,
-                            final List<ContentId> result)
-        throws CMException
+    public void selectAsTree(final ContentId rootContentId)
     {
-        if (result.contains(contentId)) {
-            return;
-        }
-
-        result.add(contentId);
-
-        Content content = (Content) cmServer.getContent(contentId);
-        for (String groupName : content.getContentReferenceGroupNames()) {
-            for (String name : content.getContentReferenceNames(groupName)) {
-                selectFrom(content.getContentReference(groupName, name), result);
-            }
+        if (rootContentId == null) {
+            throw new IllegalArgumentException("Null argument not allowed!");
         }
     }
 }

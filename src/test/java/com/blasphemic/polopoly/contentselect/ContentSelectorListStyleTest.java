@@ -12,9 +12,9 @@ import org.junit.Test;
 import com.polopoly.cm.ContentId;
 import com.polopoly.cm.client.Content;
 
-public class ContentSelectorTest
+public class ContentSelectorListStyleTest
 {
-    private static final Logger LOG = Logger.getLogger(ContentSelectorTest.class.getName());
+    private static final Logger LOG = Logger.getLogger(ContentSelectorListStyleTest.class.getName());
 
     private TestCmServer cmServer;
     private ContentSelector selector;

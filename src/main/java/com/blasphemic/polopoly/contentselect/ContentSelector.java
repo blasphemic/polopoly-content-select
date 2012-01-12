@@ -1,37 +1,58 @@
 package com.blasphemic.polopoly.contentselect;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.blasphemic.polopoly.contentselect.list.ContentSelectorTraverserList;
-import com.polopoly.cm.ContentId;
+import com.blasphemic.polopoly.contentselect.graph.ContentVertex;
+import com.polopoly.cm.VersionedContentId;
+import com.polopoly.cm.client.CMException;
 import com.polopoly.cm.client.CMServer;
+import com.polopoly.cm.client.ContentRead;
 
 public class ContentSelector
 {
-    private ContentSelectorTraverser listTraverser = null;
+    private CMServer cmServer;
+    private ContentGraphTraverser graphTraverser;
 
     public ContentSelector(final CMServer cmServer)
     {
-        listTraverser = new ContentSelectorTraverserList(cmServer);
+        this(cmServer, new ContentGraphTraverser(cmServer));
     }
 
-    public List<ContentId> select(final ContentId rootContentId)
+    public ContentSelector(final CMServer cmServer,
+                           final ContentGraphTraverser traverser)
+    {
+        this.cmServer = cmServer;
+        this.graphTraverser = traverser;
+    }
+
+    public ContentGraphTraverseResult select(final VersionedContentId rootContentId,
+                                             final ContentGraphTraverserFilter filter,
+                                             final ContentGraphTraverserObserver observer)
     {
         if (rootContentId == null) {
-            throw new IllegalArgumentException("Null argument not allowed!");
+            throw new IllegalArgumentException("The root content id cannot be null!");
         }
 
-        List<ContentId> result = new ArrayList<ContentId>();
-        listTraverser.traverse(rootContentId, result);
+        assertContentExists(rootContentId);
+
+        graphTraverser = new ContentGraphTraverser(cmServer, filter, observer);
+
+        ContentVertex rootVertex = new ContentVertex(rootContentId);
+        ContentGraphTraverseResult result = graphTraverser.traverseAndFilter(rootVertex);
 
         return result;
     }
 
-    public void selectAsTree(final ContentId rootContentId)
+    private void assertContentExists(final VersionedContentId contentId)
     {
-        if (rootContentId == null) {
-            throw new IllegalArgumentException("Null argument not allowed!");
+        ContentRead content = null;
+
+        try {
+            content = cmServer.getContent(contentId);
+        } catch (CMException cme) {
+            // Assume it does not exist
+        }
+
+        if (content == null) {
+            throw new IllegalArgumentException(String.format("Content '%s' does not exist!", contentId.getContentIdString()));
         }
     }
 }
